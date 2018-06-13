@@ -1,6 +1,9 @@
 let native = require('bindings')('node-icu-transliterator');
 
-module.exports = function(rules, dir) {
-    if (dir === undefined) dir = true;
+let self = module.exports = function(rules, dir) {
+    if (dir === undefined) dir = self.FORWARD;
     return new native.Transliterator(rules, dir);
 }
+
+self.FORWARD = true;
+self.REVERSE = false;
