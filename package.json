@@ -1,6 +1,6 @@
 {
   "name": "icu-transliterator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "node.js bindings for ICU rule-based transliterators",
   "main": "node-icu-transliterator.js",
   "scripts": {
