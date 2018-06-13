@@ -38,9 +38,9 @@ private:
   static
   NAN_METHOD(New) {
     if (info.IsConstructCall()) {
-      icu::UnicodeString rules(*Nan::Utf8String(info[0]));
+      v8::String::Value rules(v8::Isolate::GetCurrent(), info[0]);
       UTransDirection dir = Nan::To<bool>(info[1]).FromJust() ? UTRANS_FORWARD : UTRANS_REVERSE;
-      NodeTransliterator *obj = new NodeTransliterator(rules, dir);
+      NodeTransliterator *obj = new NodeTransliterator(*rules, dir);
       obj->Wrap(info.This());
       info.GetReturnValue().Set(info.This());
     } else {
