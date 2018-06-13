@@ -1,14 +1,14 @@
 {
   "name": "icu-transliterator",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "node.js bindings for ICU rule-based transliterators",
   "main": "node-icu-transliterator.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "node-gyp rebuild"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "David Kamholz",
+  "license": "MIT",
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.3.0",
