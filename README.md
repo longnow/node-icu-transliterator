@@ -13,13 +13,18 @@ Example:
 ```javascript
 let RBT = require('icu-transliterator').RBT;
 
-let myRBT = RBT('a > b; b > a;', RBT.FORWARD);
+let myRBT = RBT('Latin-Cyrillic', RBT.FORWARD);
+myRBT.transliterate('mir'); // -> 'мир'
+
+let myRBT = RBT.fromRules('a > b; b > a;', RBT.FORWARD);
 myRBT.transliterate('abcd'); // -> 'bacd'
 ```
 
-The first argument to the `RBT` constructor is a string containing the transliteration rules. The second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
+`RBT` creates a transliterator from an ICU transliterator ID. The first argument is the ID and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
 
-The constructor returns an object that has a single method `transliterate`. It takes one argument, a string to transliterate, and returned the transliterated string.
+`RBT.fromRules` creates a transliterator from a rules string. The first argument is rules string and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
+
+The returned transliterator object has a single method `transliterate`. It takes one argument, a string to transliterate, and returned the transliterated string.
 
 ## Rule-Based Number Formats
 

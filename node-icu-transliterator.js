@@ -1,16 +1,23 @@
 let native = require('bindings')('node-icu-transliterator');
 
-function RBT(rules, dir) {
-    if (rules === undefined) throw 'missing rules parameter';
-    if (dir === undefined) dir = RBT.FORWARD;
-    return new native.RBT(rules, dir);
+let RBT = function RBT(id, dir) {
+  if (id === undefined) throw 'missing id parameter';
+  if (dir === undefined) dir = RBT.FORWARD;
+  return new native.RBT(1, id, dir);
 }
+
+RBT.fromRules = function(rules, dir) {
+  if (rules === undefined) throw 'missing rules parameter';
+  if (dir === undefined) dir = RBT.FORWARD;
+  return new native.RBT(2, rules, dir);
+}
+
 RBT.FORWARD = true;
 RBT.REVERSE = false;
 
-function RBNF(rules) {
-    if (rules === undefined) throw 'missing rules parameter';
-    return new native.RBNF(rules);
+let RBNF = function RBNF(rules) {
+  if (rules === undefined) throw 'missing rules parameter';
+  return new native.RBNF(rules);
 }
 
 exports.RBT = RBT;
