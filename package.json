@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "node.js bindings for ICU rule-based transliterators and rule-based number formats",
   "main": "node-icu-transliterator.js",
+  "repository": "github:longnow/node-icu-transliterator",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "node-gyp rebuild"
