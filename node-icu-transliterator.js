@@ -12,6 +12,12 @@ RBT.fromRules = function(rules, dir) {
   return new native.RBT(2, rules, dir);
 }
 
+RBT.register = function(id, rules) {
+  if (id === undefined) throw 'missing id parameter';
+  if (rules === undefined) throw 'missing rules parameter';
+  native.RBT.register(id, rules);
+}
+
 RBT.FORWARD = true;
 RBT.REVERSE = false;
 

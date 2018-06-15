@@ -2,6 +2,11 @@
 #include <unicode/translit.h>
 #include <unicode/rbnf.h>
 
+using icu::FieldPosition;
+using icu::RuleBasedNumberFormat;
+using icu::Transliterator;
+using icu::UnicodeString;
+
 class RBT : public Nan::ObjectWrap {
 
 public:
@@ -11,6 +16,7 @@ public:
     tpl->SetClassName(Nan::New("RBT").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+    Nan::SetMethod(tpl, "register", Register);
     Nan::SetPrototypeMethod(tpl, "transliterate", Transliterate);
 
     constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
@@ -34,8 +40,8 @@ private:
       UErrorCode status = U_ZERO_ERROR;
       RBT *obj = new RBT();
 
-      if (type == 1) obj->t_ = icu::Transliterator::createInstance(*str, dir, pError, status);
-      else obj->t_ = icu::Transliterator::createFromRules("RBT", *str, dir, pError, status);
+      if (type == 1) obj->t_ = Transliterator::createInstance(*str, dir, pError, status);
+      else obj->t_ = Transliterator::createFromRules("RBT", *str, dir, pError, status);
 
       if (U_FAILURE(status)) {
           Nan::ThrowError(u_errorName(status));
@@ -51,10 +57,25 @@ private:
     }
   }
 
+  static NAN_METHOD(Register) {
+    v8::String::Value id(v8::Isolate::GetCurrent(), info[0]);
+    v8::String::Value rules(v8::Isolate::GetCurrent(), info[1]);
+
+    UParseError pError;
+    UErrorCode status = U_ZERO_ERROR;
+    Transliterator *t = Transliterator::createFromRules(*id, *rules, UTRANS_FORWARD, pError, status);
+
+    if (U_FAILURE(status)) {
+        Nan::ThrowError(u_errorName(status));
+    }
+
+    Transliterator::registerInstance(t);
+  }
+
   static NAN_METHOD(Transliterate) {
     RBT *obj = Nan::ObjectWrap::Unwrap<RBT>(info.This());
     v8::String::Value v8_str(v8::Isolate::GetCurrent(), info[0]);
-    icu::UnicodeString u_str(*v8_str);
+    UnicodeString u_str(*v8_str);
     obj->t_->transliterate(u_str);
     info.GetReturnValue().Set(Nan::New<v8::String>((const uint16_t *)u_str.getTerminatedBuffer()).ToLocalChecked());
   }
@@ -64,7 +85,7 @@ private:
     return my_constructor;
   }
 
-  icu::Transliterator *t_;
+  Transliterator *t_;
 };
 
 class RBNF : public Nan::ObjectWrap {
@@ -82,11 +103,11 @@ public:
     Nan::Set(target, Nan::New("RBNF").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
   }
 
-  RBNF(icu::UnicodeString rules) {
+  RBNF(UnicodeString rules) {
     UParseError pError;
     UErrorCode status = U_ZERO_ERROR;
 
-    f_ = new icu::RuleBasedNumberFormat(rules, pError, status);
+    f_ = new RuleBasedNumberFormat(rules, pError, status);
 
     if (U_FAILURE(status)) {
         Nan::ThrowError(u_errorName(status));
@@ -114,8 +135,8 @@ private:
   }
 
   static NAN_METHOD(Format) {
-    icu::UnicodeString str;
-    icu::FieldPosition pos(icu::FieldPosition::DONT_CARE);
+    UnicodeString str;
+    FieldPosition pos(FieldPosition::DONT_CARE);
     RBNF *obj = Nan::ObjectWrap::Unwrap<RBNF>(info.This());
     obj->f_->format(Nan::To<double>(info[0]).FromJust(), str, pos);
     info.GetReturnValue().Set(Nan::New<v8::String>((const uint16_t *)str.getTerminatedBuffer()).ToLocalChecked());
@@ -126,7 +147,7 @@ private:
     return my_constructor;
   }
 
-  icu::RuleBasedNumberFormat *f_;
+  RuleBasedNumberFormat *f_;
 };
 
 NAN_MODULE_INIT(Init) {

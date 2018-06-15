@@ -18,13 +18,20 @@ myRBT.transliterate('mir'); // -> 'мир'
 
 let myRBT = RBT.fromRules('a > b; b > a;', RBT.FORWARD);
 myRBT.transliterate('abcd'); // -> 'bacd'
+
+RBT.register('foo', 'a > c; b > d;');
+let myRBT = RBT('foo', RBT.FORWARD);
+myRBT.transliterate('abcd'); // -> 'cdcd'
+
 ```
 
-`RBT` creates a transliterator from an ICU transliterator ID. The first argument is the ID and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
+`RBT(id, dir)` creates a transliterator from an ICU transliterator ID. The first argument is the ID and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
 
-`RBT.fromRules` creates a transliterator from a rules string. The first argument is rules string and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
+`RBT.fromRules(rules, dir)` creates a transliterator from a rules string. The first argument is rules string and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
 
 The returned transliterator object has a single method `transliterate`. It takes one argument, a string to transliterate, and returned the transliterated string.
+
+`RBT.register(id, rules)` registers a transliterator with ICU. The first argument is the new ID and the second argument is the rules string. Once registered, you can access the transliterator with `RBT(id, dir)`.
 
 ## Rule-Based Number Formats
 
