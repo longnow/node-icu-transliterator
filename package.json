@@ -1,6 +1,6 @@
 {
   "name": "icu-transliterator",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "node.js bindings for ICU rule-based transliterators and rule-based number formats",
   "main": "node-icu-transliterator.js",
   "repository": "github:longnow/node-icu-transliterator",
@@ -13,6 +13,6 @@
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.3.0",
-    "nan": "^2.10.0"
+    "node-addon-api": "^1.3.0"
   }
 }

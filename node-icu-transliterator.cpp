@@ -1,158 +1,113 @@
-#include <nan.h>
-#include <unicode/translit.h>
-#include <unicode/rbnf.h>
+#include "node-icu-transliterator.h"
 
-using icu::FieldPosition;
-using icu::RuleBasedNumberFormat;
-using icu::Transliterator;
-using icu::UnicodeString;
+// RBT
 
-class RBT : public Nan::ObjectWrap {
+Napi::FunctionReference RBT::constructor;
 
-public:
+Napi::Object RBT::Init(Napi::Env env, Napi::Object exports) {
+  Napi::HandleScope scope(env);
 
-  static NAN_MODULE_INIT(Init) {
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-    tpl->SetClassName(Nan::New("RBT").ToLocalChecked());
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  Napi::Function ctor = DefineClass(env, "RBT", {
+    StaticMethod("register", &RBT::Register),
+    InstanceMethod("transliterate", &RBT::Transliterate),
+  });
 
-    Nan::SetMethod(tpl, "register", Register);
-    Nan::SetPrototypeMethod(tpl, "transliterate", Transliterate);
+  constructor = Napi::Persistent(ctor);
+  constructor.SuppressDestruct();
 
-    constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
-    Nan::Set(target, Nan::New("RBT").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
-  }
-
-  RBT() : t_(NULL) {}
-
-  ~RBT() {
-    if (t_) delete t_;
-  }
-
-private:
-  static NAN_METHOD(New) {
-    if (info.IsConstructCall()) {
-      int32_t type = Nan::To<int32_t>(info[0]).FromJust();
-      v8::String::Value str(v8::Isolate::GetCurrent(), info[1]);
-      UTransDirection dir = Nan::To<bool>(info[2]).FromJust() ? UTRANS_FORWARD : UTRANS_REVERSE;
-
-      UParseError pError;
-      UErrorCode status = U_ZERO_ERROR;
-      RBT *obj = new RBT();
-
-      if (type == 1) obj->t_ = Transliterator::createInstance(*str, dir, pError, status);
-      else obj->t_ = Transliterator::createFromRules("RBT", *str, dir, pError, status);
-
-      if (U_FAILURE(status)) {
-          Nan::ThrowError(u_errorName(status));
-      }
-
-      obj->Wrap(info.This());
-      info.GetReturnValue().Set(info.This());
-    } else {
-      const int argc = 1;
-      v8::Local<v8::Value> argv[argc] = {info[0]};
-      v8::Local<v8::Function> cons = Nan::New(constructor());
-      info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
-    }
-  }
-
-  static NAN_METHOD(Register) {
-    v8::String::Value id(v8::Isolate::GetCurrent(), info[0]);
-    v8::String::Value rules(v8::Isolate::GetCurrent(), info[1]);
-
-    UParseError pError;
-    UErrorCode status = U_ZERO_ERROR;
-    Transliterator *t = Transliterator::createFromRules(*id, *rules, UTRANS_FORWARD, pError, status);
-
-    if (U_FAILURE(status)) {
-        Nan::ThrowError(u_errorName(status));
-    }
-
-    Transliterator::registerInstance(t);
-  }
-
-  static NAN_METHOD(Transliterate) {
-    RBT *obj = Nan::ObjectWrap::Unwrap<RBT>(info.This());
-    v8::String::Value v8_str(v8::Isolate::GetCurrent(), info[0]);
-    UnicodeString u_str(*v8_str);
-    obj->t_->transliterate(u_str);
-    info.GetReturnValue().Set(Nan::New<v8::String>((const uint16_t *)u_str.getTerminatedBuffer()).ToLocalChecked());
-  }
-
-  static inline Nan::Persistent<v8::Function>& constructor() {
-    static Nan::Persistent<v8::Function> my_constructor;
-    return my_constructor;
-  }
-
-  Transliterator *t_;
-};
-
-class RBNF : public Nan::ObjectWrap {
-
-public:
-
-  static NAN_MODULE_INIT(Init) {
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-    tpl->SetClassName(Nan::New("RBNF").ToLocalChecked());
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-    Nan::SetPrototypeMethod(tpl, "format", Format);
-
-    constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
-    Nan::Set(target, Nan::New("RBNF").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
-  }
-
-  RBNF(UnicodeString rules) {
-    UParseError pError;
-    UErrorCode status = U_ZERO_ERROR;
-
-    f_ = new RuleBasedNumberFormat(rules, pError, status);
-
-    if (U_FAILURE(status)) {
-        Nan::ThrowError(u_errorName(status));
-    }
-
-  }
-
-  ~RBNF() {
-    delete f_;
-  }
-
-private:
-  static NAN_METHOD(New) {
-    if (info.IsConstructCall()) {
-      v8::String::Value rules(v8::Isolate::GetCurrent(), info[0]);
-      RBNF *obj = new RBNF(*rules);
-      obj->Wrap(info.This());
-      info.GetReturnValue().Set(info.This());
-    } else {
-      const int argc = 1;
-      v8::Local<v8::Value> argv[argc] = {info[0]};
-      v8::Local<v8::Function> cons = Nan::New(constructor());
-      info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
-    }
-  }
-
-  static NAN_METHOD(Format) {
-    UnicodeString str;
-    FieldPosition pos(FieldPosition::DONT_CARE);
-    RBNF *obj = Nan::ObjectWrap::Unwrap<RBNF>(info.This());
-    obj->f_->format(Nan::To<double>(info[0]).FromJust(), str, pos);
-    info.GetReturnValue().Set(Nan::New<v8::String>((const uint16_t *)str.getTerminatedBuffer()).ToLocalChecked());
-  }
-
-  static inline Nan::Persistent<v8::Function>& constructor() {
-    static Nan::Persistent<v8::Function> my_constructor;
-    return my_constructor;
-  }
-
-  RuleBasedNumberFormat *f_;
-};
-
-NAN_MODULE_INIT(Init) {
-  RBT::Init(target);
-  RBNF::Init(target);
+  exports.Set("RBT", ctor);
+  return exports;
 }
 
-NODE_MODULE(node_icu_transliterator, Init);
+RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
+  int32_t type = info[0].As<Napi::Number>().Int32Value();
+  UnicodeString str(info[1].As<Napi::String>().Utf16Value().data());
+  UTransDirection dir = info[2].As<Napi::Boolean>().Value() ? UTRANS_FORWARD : UTRANS_REVERSE;
+
+  UParseError pError;
+  UErrorCode status = U_ZERO_ERROR;
+
+  if (type == 1) t_ = Transliterator::createInstance(str, dir, pError, status);
+  else t_ = Transliterator::createFromRules("RBT", str, dir, pError, status);
+
+  if (U_FAILURE(status)) {
+    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+  }
+}
+
+RBT::~RBT() {
+  if (t_) delete t_;
+}
+
+void RBT::Register(const Napi::CallbackInfo& info) {
+  UnicodeString id(info[0].As<Napi::String>().Utf16Value().data());
+  UnicodeString rules(info[1].As<Napi::String>().Utf16Value().data());
+
+  UParseError pError;
+  UErrorCode status = U_ZERO_ERROR;
+  Transliterator *t = Transliterator::createFromRules(id, rules, UTRANS_FORWARD, pError, status);
+
+  if (U_FAILURE(status)) {
+      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+  }
+
+  Transliterator::registerInstance(t);
+}
+
+Napi::Value RBT::Transliterate(const Napi::CallbackInfo& info) {
+  UnicodeString str(info[0].As<Napi::String>().Utf16Value().data());
+  t_->transliterate(str);
+  return Napi::String::New(info.Env(), str.getTerminatedBuffer());
+};
+
+// RBNF
+
+Napi::FunctionReference RBNF::constructor;
+
+Napi::Object RBNF::Init(Napi::Env env, Napi::Object exports) {
+  Napi::HandleScope scope(env);
+
+  Napi::Function ctor = DefineClass(env, "RBNF", {
+    InstanceMethod("format", &RBNF::Format),
+  });
+
+  constructor = Napi::Persistent(ctor);
+  constructor.SuppressDestruct();
+
+  exports.Set("RBNF", ctor);
+  return exports;
+}
+
+RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
+  UnicodeString rules(info[0].As<Napi::String>().Utf16Value().data());
+
+  UParseError pError;
+  UErrorCode status = U_ZERO_ERROR;
+
+  f_ = new RuleBasedNumberFormat(rules, pError, status);
+
+  if (U_FAILURE(status)) {
+      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+  }
+}
+
+RBNF::~RBNF() {
+  if (f_) delete f_;
+}
+
+Napi::Value RBNF::Format(const Napi::CallbackInfo& info) {
+  UnicodeString str;
+  FieldPosition pos(FieldPosition::DONT_CARE);
+  f_->format(info[0].As<Napi::Number>().DoubleValue(), str, pos);
+  return Napi::String::New(info.Env(), str.getTerminatedBuffer());
+}
+
+// init
+
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  RBT::Init(env, exports);
+  RBNF::Init(env, exports);
+  return exports;
+}
+
+NODE_API_MODULE(node_icu_transliterator, Init);
