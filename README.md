@@ -50,7 +50,7 @@ let myRBNF = RBNF.fromRules('-x: minus >>; x.x: << point >>; zero; one; two; thr
 myRBNF.format(1.1); // -> 'one point one'
 ```
 
-`RBNF(language, tag)` creates a number formatter for a built-in ICU locale. The first is the language code (ISO 639 alpha-2 or alpha-3). The optional second argument is one of `RBNF.SPELLOUT` (default), `RBNF.ORDINAL`, `RBNF.DURATION`, or `RBNF.NUMBERING_SYSTEM`.
+`RBNF(language, tag)` creates a number formatter for a built-in ICU locale. The first argument is the language code (ISO 639 alpha-2 or alpha-3). The optional second argument is one of `RBNF.SPELLOUT` (default), `RBNF.ORDINAL`, `RBNF.DURATION`, or `RBNF.NUMBERING_SYSTEM`.
 
 `RBNF.fromRules(rules)` creates a number formatter from the passed-in rules string.
 
