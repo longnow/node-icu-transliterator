@@ -21,10 +21,21 @@ RBT.register = function(id, rules) {
 RBT.FORWARD = true;
 RBT.REVERSE = false;
 
-let RBNF = function RBNF(rules) {
+let RBNF = function RBNF(language, tag) {
+  if (language === undefined) throw 'missing language parameter';
+  if (tag === undefined) tag = RBNF.SPELLOUT;
+  return new native.RBNF(language, tag);
+}
+
+RBNF.fromRules = function(rules) {
   if (rules === undefined) throw 'missing rules parameter';
   return new native.RBNF(rules);
 }
+
+RBNF.SPELLOUT = 0;
+RBNF.ORDINAL = 1;
+RBNF.DURATION = 2;
+RBNF.NUMBERING_SYSTEM = 3;
 
 exports.RBT = RBT;
 exports.RBNF = RBNF;

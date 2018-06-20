@@ -25,7 +25,7 @@ myRBT.transliterate('abcd'); // -> 'cdcd'
 
 ```
 
-`RBT(id, dir)` creates a transliterator from an ICU transliterator ID. The first argument is the ID and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
+`RBT(id, dir)` creates a transliterator from an ICU transliterator ID. The first argument is the ID. The optional second argument is the direction, either `RBT.FORWARD` (default) or `RBT.REVERSE`.
 
 `RBT.fromRules(rules, dir)` creates a transliterator from a rules string. The first argument is rules string and the second argument is the direction, either `RBT.FORWARD` or `RBT.REVERSE`. If the second argument is omitted, it defaults to `RBT.FORWARD`.
 
@@ -40,8 +40,18 @@ Example:
 ```javascript
 let RBNF = require('icu-transliterator').RBNF;
 
-let myRBNF = RBNF('-x: minus >>; x.x: << point >>; zero; one; two; three; four; five; six; seven; eight; nine; 10: << >>; 100: << >>>; 1000: <<, >>>; 1,000,000: <<, >>>; 1,000,000,000: <<, >>>; 1,000,000,000,000: <<, >>>; 1,000,000,000,000,000: =#,##0=; ');
+let myRBNF = RBNF('eng');
+myRBNF.format(14); //  -> 'fourteen'
+
+let myRBNF = RBNF('eng', RBNF.ORDINAL);
+myRBNF.format(14); //  -> '14th'
+
+let myRBNF = RBNF.fromRules('-x: minus >>; x.x: << point >>; zero; one; two; three; four; five; six; seven; eight; nine; 10: << >>; 100: << >>>; 1000: <<, >>>; 1,000,000: <<, >>>; 1,000,000,000: <<, >>>; 1,000,000,000,000: <<, >>>; 1,000,000,000,000,000: =#,##0=; ');
 myRBNF.format(1.1); // -> 'one point one'
 ```
 
-The argument to the `RBNF` constructor is a string containing the number format rules. The constructor returns an object that has a single method `format`. It takes one argument, a number to format, and returns the formatted string.
+`RBNF(language, tag)` creates a number formatter for a built-in ICU locale. The first is the language code (ISO 639 alpha-2 or alpha-3). The optional second argument is one of `RBNF.SPELLOUT` (default), `RBNF.ORDINAL`, `RBNF.DURATION`, or `RBNF.NUMBERING_SYSTEM`.
+
+`RBNF.fromRules(rules)` creates a number formatter from the passed-in rules string.
+
+The returned formatter object has a single method `format`. It takes one argument, a number to format, and returns the formatted string.

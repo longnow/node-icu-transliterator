@@ -63,6 +63,8 @@ Napi::Value RBT::Transliterate(const Napi::CallbackInfo& info) {
 
 Napi::FunctionReference RBNF::constructor;
 
+URBNFRuleSetTag tags[] =  { icu::URBNF_SPELLOUT, icu::URBNF_ORDINAL, icu::URBNF_DURATION, icu::URBNF_NUMBERING_SYSTEM };
+
 Napi::Object RBNF::Init(Napi::Env env, Napi::Object exports) {
   Napi::HandleScope scope(env);
 
@@ -77,12 +79,20 @@ Napi::Object RBNF::Init(Napi::Env env, Napi::Object exports) {
 }
 
 RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
-  UnicodeString rules(info[0].As<Napi::String>().Utf16Value().data());
-
-  UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
 
-  f_ = new RuleBasedNumberFormat(rules, pError, status);
+  if (info.Length() == 2) {
+    Locale loc(info[0].As<Napi::String>().Utf8Value().data());
+
+    int32_t tag = info[1].As<Napi::Number>().Int32Value();
+    if (tag < 0 || tag > 3) Napi::Error::New(info.Env(), "invalid tag").ThrowAsJavaScriptException();
+
+    f_ = new RuleBasedNumberFormat(tags[tag], loc, status);
+  } else {
+    UnicodeString rules(info[0].As<Napi::String>().Utf16Value().data());
+    UParseError pError;
+    f_ = new RuleBasedNumberFormat(rules, pError, status);
+  }
 
   if (U_FAILURE(status)) {
     Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();

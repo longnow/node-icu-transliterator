@@ -6,8 +6,10 @@
 #include <unicode/rbnf.h>
 
 using icu::FieldPosition;
+using icu::Locale;
 using icu::RuleBasedNumberFormat;
 using icu::Transliterator;
+using icu::URBNFRuleSetTag;
 using icu::UnicodeString;
 
 class RBT : public Napi::ObjectWrap<RBT> {
