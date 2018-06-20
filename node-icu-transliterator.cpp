@@ -14,7 +14,6 @@ Napi::Object RBT::Init(Napi::Env env, Napi::Object exports) {
 
   constructor = Napi::Persistent(ctor);
   constructor.SuppressDestruct();
-
   exports.Set("RBT", ctor);
   return exports;
 }
@@ -45,10 +44,10 @@ void RBT::Register(const Napi::CallbackInfo& info) {
 
   UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
-  Transliterator *t = Transliterator::createFromRules(id, rules, UTRANS_FORWARD, pError, status);
+  Transliterator* t = Transliterator::createFromRules(id, rules, UTRANS_FORWARD, pError, status);
 
   if (U_FAILURE(status)) {
-      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
   }
 
   Transliterator::registerInstance(t);
@@ -73,7 +72,6 @@ Napi::Object RBNF::Init(Napi::Env env, Napi::Object exports) {
 
   constructor = Napi::Persistent(ctor);
   constructor.SuppressDestruct();
-
   exports.Set("RBNF", ctor);
   return exports;
 }
@@ -87,7 +85,7 @@ RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
   f_ = new RuleBasedNumberFormat(rules, pError, status);
 
   if (U_FAILURE(status)) {
-      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
   }
 }
 

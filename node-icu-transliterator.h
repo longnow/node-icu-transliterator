@@ -22,7 +22,7 @@ private:
   Napi::Value Transliterate(const Napi::CallbackInfo& info);
 
   static Napi::FunctionReference constructor;
-  Transliterator *t_;
+  Transliterator* t_;
 };
 
 class RBNF : public Napi::ObjectWrap<RBNF> {
@@ -36,7 +36,7 @@ private:
   Napi::Value Format(const Napi::CallbackInfo& info);
 
   static Napi::FunctionReference constructor;
-  RuleBasedNumberFormat *f_;
+  RuleBasedNumberFormat* f_;
 };
 
 #endif
