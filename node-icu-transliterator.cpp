@@ -26,11 +26,26 @@ RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
   UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
 
-  if (type == 1) t_ = Transliterator::createInstance(str, dir, pError, status);
-  else t_ = Transliterator::createFromRules("RBT", str, dir, pError, status);
+  if (type == 1) {
+    t_ = Transliterator::createInstance(str, dir, pError, status);
 
-  if (U_FAILURE(status)) {
-    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    if (U_FAILURE(status)) {
+      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    }
+  }
+  else {
+    t_ = Transliterator::createFromRules("RBT", str, dir, pError, status);
+
+    if (U_FAILURE(status)) {
+      std::string err(u_errorName(status));
+      err += " (line ";
+      err += std::to_string(pError.line + 1);
+      err += ", char ";
+      err += std::to_string(pError.offset + 1);
+      err += ")";
+
+      Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
+    }
   }
 }
 
@@ -88,14 +103,26 @@ RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
     if (tag < 0 || tag > 3) Napi::Error::New(info.Env(), "invalid tag").ThrowAsJavaScriptException();
 
     f_ = new RuleBasedNumberFormat(tags[tag], loc, status);
+
+    if (U_FAILURE(status)) {
+      Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    }
   } else {
     UnicodeString rules(info[0].As<Napi::String>().Utf16Value().data());
     UParseError pError;
-    f_ = new RuleBasedNumberFormat(rules, pError, status);
-  }
 
-  if (U_FAILURE(status)) {
-    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    f_ = new RuleBasedNumberFormat(rules, pError, status);
+
+    if (U_FAILURE(status)) {
+      std::string err(u_errorName(status));
+      err += " (line ";
+      err += std::to_string(pError.line + 1);
+      err += ", char ";
+      err += std::to_string(pError.offset + 1);
+      err += ")";
+
+      Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
+    }
   }
 }
 
