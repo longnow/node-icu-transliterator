@@ -59,10 +59,11 @@ RBT::~RBT() {
 void RBT::Register(const Napi::CallbackInfo& info) {
   UnicodeString id(info[0].As<Napi::String>().Utf16Value().data());
   UnicodeString rules(info[1].As<Napi::String>().Utf16Value().data());
+  UTransDirection dir = info[2].As<Napi::Boolean>().Value() ? UTRANS_FORWARD : UTRANS_REVERSE;
 
   UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
-  Transliterator* t = Transliterator::createFromRules(id, rules, UTRANS_FORWARD, pError, status);
+  Transliterator* t = Transliterator::createFromRules(id, rules, dir, pError, status);
 
   if (U_FAILURE(status)) {
     Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();

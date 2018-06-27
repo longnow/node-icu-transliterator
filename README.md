@@ -31,7 +31,7 @@ myRBT.transliterate('abcd'); // -> 'cdcd'
 
 The returned transliterator object has a single method `transliterate`. It takes one argument, a string to transliterate, and returns the transliterated string.
 
-`RBT.register(id, rules)` registers a new transliterator with ICU. The first argument is the new ID and the second argument is the rules string. Once registered, you can access the transliterator with `RBT(id, dir)`.
+`RBT.register(id, rules, dir)` registers a new transliterator with ICU. The first argument is the new ID, the second argument is the rules string, and the optional third argument is the direction, either `RBT.FORWARD` (default) or `RBT.REVERSE`. Once registered, you can access the transliterator with `RBT(id, dir)`.
 
 ## Rule-Based Number Formats
 
