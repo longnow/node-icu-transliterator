@@ -37,12 +37,15 @@ RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
     t_ = Transliterator::createFromRules("RBT", str, dir, pError, status);
 
     if (U_FAILURE(status)) {
+      std::string pre, post;
+      UnicodeString(pError.preContext).toUTF8String(pre);
+      UnicodeString(pError.postContext).toUTF8String(post);
+
       std::string err(u_errorName(status));
-      err += " (line ";
-      err += std::to_string(pError.line + 1);
-      err += ", char ";
-      err += std::to_string(pError.offset + 1);
-      err += ")";
+      err += "\n";
+      err += pre;
+      err += " <<HERE>> ";
+      err += post;
 
       Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
     }
