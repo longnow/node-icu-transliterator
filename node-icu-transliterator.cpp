@@ -1,5 +1,24 @@
 #include "node-icu-transliterator.h"
 
+// util
+
+UTransDirection GetRBTDirection(const Napi::Value& v) {
+  return v.As<Napi::Boolean>().Value() ? UTRANS_FORWARD : UTRANS_REVERSE;
+}
+
+void AppendParseError(std::string& err, UParseError& pError) {
+  std::string pre, post;
+  UnicodeString(pError.preContext).toUTF8String(pre);
+  UnicodeString(pError.postContext).toUTF8String(post);
+
+  if (pre.length() || post.length()) {
+    err += "\n";
+    err += pre;
+    err += " <<HERE>> ";
+    err += post;
+  }
+}
+
 // RBT
 
 Napi::FunctionReference RBT::constructor;
@@ -21,7 +40,8 @@ Napi::Object RBT::Init(Napi::Env env, Napi::Object exports) {
 RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
   int32_t type = info[0].As<Napi::Number>().Int32Value();
   UnicodeString str(info[1].As<Napi::String>().Utf16Value().data());
-  UTransDirection dir = info[2].As<Napi::Boolean>().Value() ? UTRANS_FORWARD : UTRANS_REVERSE;
+  UTransDirection dir = GetRBTDirection(info[2]);
+  t_ = NULL;
 
   UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
@@ -37,16 +57,8 @@ RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
     t_ = Transliterator::createFromRules("RBT", str, dir, pError, status);
 
     if (U_FAILURE(status)) {
-      std::string pre, post;
-      UnicodeString(pError.preContext).toUTF8String(pre);
-      UnicodeString(pError.postContext).toUTF8String(post);
-
       std::string err(u_errorName(status));
-      err += "\n";
-      err += pre;
-      err += " <<HERE>> ";
-      err += post;
-
+      AppendParseError(err, pError);
       Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
     }
   }
@@ -59,17 +71,19 @@ RBT::~RBT() {
 void RBT::Register(const Napi::CallbackInfo& info) {
   UnicodeString id(info[0].As<Napi::String>().Utf16Value().data());
   UnicodeString rules(info[1].As<Napi::String>().Utf16Value().data());
-  UTransDirection dir = info[2].As<Napi::Boolean>().Value() ? UTRANS_FORWARD : UTRANS_REVERSE;
+  UTransDirection dir = GetRBTDirection(info[2]);
 
   UParseError pError;
   UErrorCode status = U_ZERO_ERROR;
   Transliterator* t = Transliterator::createFromRules(id, rules, dir, pError, status);
 
   if (U_FAILURE(status)) {
-    Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
+    std::string err(u_errorName(status));
+    AppendParseError(err, pError);
+    Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
+  } else {
+    Transliterator::registerInstance(t);
   }
-
-  Transliterator::registerInstance(t);
 }
 
 Napi::Value RBT::Transliterate(const Napi::CallbackInfo& info) {
@@ -99,6 +113,7 @@ Napi::Object RBNF::Init(Napi::Env env, Napi::Object exports) {
 
 RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
   UErrorCode status = U_ZERO_ERROR;
+  f_ = NULL;
 
   if (info.Length() == 2) {
     Locale loc(info[0].As<Napi::String>().Utf8Value().data());
