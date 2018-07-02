@@ -134,12 +134,7 @@ RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
 
     if (U_FAILURE(status)) {
       std::string err(u_errorName(status));
-      err += " (line ";
-      err += std::to_string(pError.line + 1);
-      err += ", char ";
-      err += std::to_string(pError.offset + 1);
-      err += ")";
-
+      AppendParseError(err, pError);
       Napi::Error::New(info.Env(), err).ThrowAsJavaScriptException();
     }
   }
