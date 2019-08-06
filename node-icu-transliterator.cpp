@@ -39,7 +39,7 @@ Napi::Object RBT::Init(Napi::Env env, Napi::Object exports) {
 
 RBT::RBT(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBT>(info) {
   int32_t type = info[0].As<Napi::Number>().Int32Value();
-  UnicodeString str(info[1].As<Napi::String>().Utf16Value().data());
+  UnicodeString str((const UChar*)info[1].As<Napi::String>().Utf16Value().data());
   UTransDirection dir = GetRBTDirection(info[2]);
   t_ = NULL;
 
@@ -69,8 +69,8 @@ RBT::~RBT() {
 }
 
 void RBT::Register(const Napi::CallbackInfo& info) {
-  UnicodeString id(info[0].As<Napi::String>().Utf16Value().data());
-  UnicodeString rules(info[1].As<Napi::String>().Utf16Value().data());
+  UnicodeString id((const UChar*)info[0].As<Napi::String>().Utf16Value().data());
+  UnicodeString rules((const UChar*)info[1].As<Napi::String>().Utf16Value().data());
   UTransDirection dir = GetRBTDirection(info[2]);
 
   UParseError pError;
@@ -87,9 +87,9 @@ void RBT::Register(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value RBT::Transliterate(const Napi::CallbackInfo& info) {
-  UnicodeString str(info[0].As<Napi::String>().Utf16Value().data());
+  UnicodeString str((const UChar*)info[0].As<Napi::String>().Utf16Value().data());
   t_->transliterate(str);
-  return Napi::String::New(info.Env(), str.getTerminatedBuffer());
+  return Napi::String::New(info.Env(), (const char16_t*)str.getTerminatedBuffer());
 };
 
 // RBNF
@@ -127,7 +127,7 @@ RBNF::RBNF(const Napi::CallbackInfo& info) : Napi::ObjectWrap<RBNF>(info) {
       Napi::Error::New(info.Env(), u_errorName(status)).ThrowAsJavaScriptException();
     }
   } else {
-    UnicodeString rules(info[0].As<Napi::String>().Utf16Value().data());
+    UnicodeString rules((const UChar*)info[0].As<Napi::String>().Utf16Value().data());
     UParseError pError;
 
     f_ = new RuleBasedNumberFormat(rules, pError, status);
@@ -148,7 +148,7 @@ Napi::Value RBNF::Format(const Napi::CallbackInfo& info) {
   UnicodeString str;
   FieldPosition pos(FieldPosition::DONT_CARE);
   f_->format(info[0].As<Napi::Number>().DoubleValue(), str, pos);
-  return Napi::String::New(info.Env(), str.getTerminatedBuffer());
+  return Napi::String::New(info.Env(), (const char16_t*)str.getTerminatedBuffer());
 }
 
 // init
