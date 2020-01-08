@@ -2,7 +2,11 @@
 
 This module provides node.js bindings for [ICU](http://site.icu-project.org/)’s [Rule-Based Transliterators](http://userguide.icu-project.org/transforms/general#TOC-Rule-Based-Transliterators) and [Rule-Based Number Formats](http://userguide.icu-project.org/formatparse/numbers).
 
-The module is published on NPM as `icu-transliterator`. To install it, you need to have ICU installed and accessible to `pkg-config`. On macOS, you can install ICU with [Homebrew](http://brew.sh) by running `brew install icu4c`. You can add it to the `pkg-config` path with `export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig`.
+The module is published on NPM as `icu-transliterator`. To install it, you need to have ICU installed and accessible to `pkg-config`.
+
+On Debian/Ubuntu Linux, you can install the necessary ICU components by installing the `libicu-dev` package.
+
+On macOS, you can install the necessary ICU components via [Homebrew](http://brew.sh) by running `brew install icu4c`. You can add it to the `pkg-config` path with `export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig`.
 
 ## Rule-Based Transliterators
 
